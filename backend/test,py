@@ -1,0 +1,13 @@
+   import sys
+   import numpy as np
+   import torch
+   import pandas as pd
+   from transformers import pipeline
+
+   print(f"Python version: {sys.version}")
+   print(f"NumPy version: {np.__version__}")
+   print(f"PyTorch version: {torch.__version__}")
+   print(f"Pandas version: {pd.__version__}")
+   print(f"Transformers version: {transformers.__version__}")
+
+   # Rest of your script...

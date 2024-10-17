@@ -1,0 +1,41 @@
+.App {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  height: 100vh;
+}
+
+.results h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.results p {
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+.restart-button {
+  margin-top: 2rem;
+  padding: 0.75rem 2rem;
+  font-size: 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.restart-button:hover {
+  background-color: #0056b3;
+}

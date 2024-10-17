@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-ga4": "^2.1.0",
+    "react-tagcloud": "^2.3.3"
+  }
+}
