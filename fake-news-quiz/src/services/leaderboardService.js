@@ -1,4 +1,4 @@
-import { supabase } from './supabaseclient';
+import { supabase } from './supabaseClient';
 
 export async function fetchLeaderboard(limit = 10, subject = null) {
   let query = supabase
