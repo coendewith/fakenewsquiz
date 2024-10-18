@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../services/supabaseclient';
+import { supabase } from '../services/supabaseClient';
 
 function TagSelector({ selectedTag, setSelectedTag, selectedDateRange }) {
   const [tags, setTags] = useState([]);
