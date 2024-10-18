@@ -211,10 +211,10 @@ function MainMenu() {
 
       <div className="mt-8 text-center text-sm text-gray-600">
         <p>
-          Powered by <a href="https://www.snopes.com/" className="text-blue-500 hover:underline">Snopes</a>
+          Created by <a href="https://github.com/coendewith" className="text-blue-500 hover:underline">CoendeWith</a>
         </p>
         <p>
-          Created by <a href="https://github.com/coendewith" className="text-blue-500 hover:underline">CoendeWith</a>
+          Powered by <a href="https://www.snopes.com/" className="text-blue-500 hover:underline">Snopes</a>
         </p>
       </div>
     </div>

@@ -1,9 +1,8 @@
 import { supabase } from './supabaseClient';  
 
 function categorizeRating(rating) {
-  const fakeRatings = ['Unfounded', 'Fake', 'False', 'Originated as Satire', 'Labeled Satire', 'Misattributed', 'Miscaptioned', 'Mostly False', 'Scam'];
-  const trueRatings = ['True', 'Correct Attribution', 'Mostly True'];
-  
+  const fakeRatings = ['Unfounded', 'Fake', 'Unproven', 'False', 'Originated as Satire', 'Mixture', 'Misattributed', 'Miscaptioned', 'Legend', 'Mostly False', 'Outdated', 'Scam', 'Labeled Satire'];
+  const trueRatings = ['True', 'Correct Attribution', 'Mostly True', 'Legit'];
   if (fakeRatings.includes(rating)) {
     return 'Fake';
   } else if (trueRatings.includes(rating)) {

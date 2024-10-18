@@ -50,12 +50,13 @@ function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }
   };
 
   const isFakeRating = (rating) => {
-    const fakeRatings = ['Unfounded', 'Fake', 'Unproven', 'False', 'Originated as Satire', 'Mixture', 'Misattributed', 'Miscaptioned', 'Legend', 'Mostly False', 'Outdated', 'Scam'];
+
+    const fakeRatings = ['Unfounded', 'Fake', 'Unproven', 'False', 'Originated as Satire', 'Mixture', 'Misattributed', 'Miscaptioned', 'Legend', 'Mostly False', 'Outdated', 'Scam', 'Labeled Satire'];
     return fakeRatings.includes(rating.trim());
   };
 
   const isTrueRating = (rating) => {
-    const trueRatings = ['True', 'Correct Attribution', 'Mostly True'];
+    const trueRatings = ['True', 'Correct Attribution', 'Mostly True', 'Legit'];
     return trueRatings.includes(rating.trim());
   };
 
