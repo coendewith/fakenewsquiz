@@ -3,7 +3,7 @@ import TagSelector from './TagSelector';
 import Leaderboard from './Leaderboard';
 import { QuizContext } from '../context/QuizContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabaseclient';
+import { supabase } from '../services/supabaseClient';
 
 function MainMenu() {
   const { dispatch, ACTIONS, state } = useContext(QuizContext);
