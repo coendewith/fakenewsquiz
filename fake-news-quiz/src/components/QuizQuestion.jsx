@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback, useContext, useRef } from 'rea
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
 import { QuizContext } from '../context/QuizContext';
 import { useNavigate } from 'react-router-dom';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 
-function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }) {
-  const { dispatch, ACTIONS } = useContext(QuizContext);
+function QuizQuestion({ question, questionNumber, currentScore }) {
+  const { state, dispatch, ACTIONS } = useContext(QuizContext);
   const [timer, setTimer] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const intervalId = useRef(null);
@@ -88,6 +89,7 @@ function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }
           title: question.Title || '',
           rating: question.Rating,
           articleUrl: question.URL,
+          id: question.id,
         },
       });
     },
@@ -95,14 +97,14 @@ function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }
   );
 
   const handleContinue = useCallback(() => {
-    if (questionNumber < totalQuestions) {
-      dispatch({ type: ACTIONS.NEXT_QUESTION }); // Dispatch NEXT_QUESTION instead of undefined action
+    if (state.lives > 0) {
+      dispatch({ type: ACTIONS.NEXT_QUESTION });
       setShowAnswer(false);
     } else {
       dispatch({ type: ACTIONS.FINISH_QUIZ });
       navigate('/results');
     }
-  }, [questionNumber, totalQuestions, dispatch, ACTIONS, navigate]);
+  }, [state.lives, dispatch, ACTIONS, navigate]);
 
   const handleDragEnd = useCallback(
     (event, info) => {
@@ -144,12 +146,19 @@ function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }
           >
             <header className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-bold mb-2 sm:mb-0">
-                Question {questionNumber} of {totalQuestions}
+                Question {questionNumber}
               </h2>
               <div className="text-gray-600">Time: {timer}s</div>
             </header>
             <div className="mb-4 text-center">
               <p className="text-lg font-semibold">Current Score: {totalScore}</p>
+              <div className="flex justify-center mt-2">
+                {[...Array(3)].map((_, index) => (
+                  index < state.lives ? 
+                    <FaHeart key={index} className="text-red-500 text-2xl mx-1" /> :
+                    <FaRegHeart key={index} className="text-red-500 text-2xl mx-1" />
+                ))}
+              </div>
             </div>
             <div className="mb-6">
               {question.Image && (
@@ -242,7 +251,7 @@ function QuizQuestion({ question, questionNumber, totalQuestions, currentScore }
               onClick={handleContinue}
               className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full"
             >
-              {questionNumber < totalQuestions ? 'Continue' : 'View Results'}
+              {state.lives > 0 ? 'Continue' : 'View Results'}
             </button>
           </motion.div>
         )}

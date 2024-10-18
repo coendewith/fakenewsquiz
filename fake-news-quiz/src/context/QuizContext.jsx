@@ -11,7 +11,9 @@ const initialState = {
   totalTime: 0,
   error: null,
   answerCards: [],
-  factChecks: [], // Store fetched data here
+  factChecks: [],
+  lives: 3, // Lives remaining
+  usedQuestionIds: [], // To track used questions
 };
 
 // Actions
@@ -19,10 +21,10 @@ const ACTIONS = {
   START_QUIZ: 'START_QUIZ',
   ANSWER_QUESTION: 'ANSWER_QUESTION',
   NEXT_QUESTION: 'NEXT_QUESTION',
+  FETCH_MORE_QUESTIONS: 'FETCH_MORE_QUESTIONS',
   FINISH_QUIZ: 'FINISH_QUIZ',
   RESTART_QUIZ: 'RESTART_QUIZ',
   SET_ERROR: 'SET_ERROR',
-  SET_FACT_CHECKS: 'SET_FACT_CHECKS', // New action to set data
   SET_QUESTIONS: 'SET_QUESTIONS',
 };
 
@@ -45,14 +47,16 @@ function quizReducer(state, action) {
         totalTime: 0,
         error: null,
         answerCards: [],
+        usedQuestionIds: [], // Reset used questions
       };
     case ACTIONS.ANSWER_QUESTION:
-      const { correct, score, time, question, context, url, title, rating,articleUrl
-      } = action.payload;
+      const { correct, score, time, question, context, url, title, rating, articleUrl, id } = action.payload;
       return {
         ...state,
         score: state.score + score,
         totalTime: state.totalTime + time,
+        lives: correct ? state.lives : state.lives - 1, // Update lives
+        usedQuestionIds: [...state.usedQuestionIds, id], // Add to used questions
         answerCards: [
           ...state.answerCards,
           {
@@ -64,22 +68,20 @@ function quizReducer(state, action) {
             url,
             title,
             rating,
-            articleUrl
-            
+            articleUrl,
           },
         ],
       };
     case ACTIONS.NEXT_QUESTION:
-      const nextIndex = state.currentQuestionIndex + 1;
-      if (nextIndex >= state.questions.length) {
-        return {
-          ...state,
-          gameState: 'results',
-        };
-      }
       return {
         ...state,
-        currentQuestionIndex: nextIndex,
+        currentQuestionIndex: state.currentQuestionIndex + 1,
+      };
+    case ACTIONS.FETCH_MORE_QUESTIONS:
+      return {
+        ...state,
+        questions: [...state.questions, ...action.payload.newQuestions],
+        usedQuestionIds: [...state.usedQuestionIds, ...action.payload.newQuestionIds],
       };
     case ACTIONS.FINISH_QUIZ:
       return {
@@ -99,85 +101,62 @@ function quizReducer(state, action) {
       return {
         ...state,
         questions: action.payload.questions,
+        usedQuestionIds: action.payload.questions.map(q => q.id),
       };
     default:
       return state;
   }
 }
 
-// Helper Functions
-function selectRandomQuestions(data, num = 5, tag = '', dateRange = 'all') {
-  let filteredData = data;
-
-  // Filter by tag if selected
-  if (tag) {
-    filteredData = filteredData.filter(factCheck => factCheck.Tags.includes(tag));
-  }
-
-  // Filter by date range if not 'all'
-  if (dateRange !== 'all') {
-    const startDate = getStartDate(dateRange);
-    if (startDate) {
-      filteredData = filteredData.filter(factCheck => {
-        const factDate = new Date(factCheck.Date);
-        return factDate >= startDate;
-      });
-    }
-  }
-
-  // Shuffle the filtered data
-  const shuffled = filteredData.sort(() => 0.5 - Math.random());
-
-  // Select the top 'num' questions
-  return shuffled.slice(0, num);
-}
-
-function getStartDate(range) {
-  const now = new Date();
-  switch (range) {
-    case 'month':
-      return new Date(now.setMonth(now.getMonth() - 1));
-    case '3months':
-      return new Date(now.setMonth(now.getMonth() - 3));
-    case 'year':
-      return new Date(now.setFullYear(now.getFullYear() - 1));
-    case 'all':
-    default:
-      return null;
-  }
-}
-
-// Create Context
-export const QuizContext = createContext();
-
 // Provider Component
 export function QuizProvider({ children }) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
 
+  // Fetch initial questions when quiz starts
   useEffect(() => {
     if (state.gameState === 'quiz' && state.questions.length === 0) {
-      fetchFactChecks(state.user.selectedTag, state.user.selectedDateRange, 5)
+      fetchFactChecks(state.user.selectedTag, state.user.selectedDateRange, 20, state.usedQuestionIds)
         .then(data => {
-          const shuffled = data.sort(() => 0.5 - Math.random());
-          const selectedQuestions = shuffled.slice(0, 5);
-          
-          // Check if we have enough unique questions
-          if (selectedQuestions.length < 5) {
+          if (data.length === 0) {
             dispatch({ 
               type: ACTIONS.SET_ERROR, 
-              payload: { 
-                error: "Not enough unique questions available. Please try different filters or try again later." 
-              } 
+              payload: { error: `No more unique questions available. Please try different filters or restart the quiz.` } 
             });
-          } else {
-            dispatch({ type: ACTIONS.SET_QUESTIONS, payload: { questions: selectedQuestions } });
+            return;
           }
+          dispatch({ type: ACTIONS.SET_QUESTIONS, payload: { questions: data } });
         })
         .catch(error => {
           dispatch({ type: ACTIONS.SET_ERROR, payload: { error: error.message } });
         });
     }
-  }, [state.gameState, state.user]);
+  }, [state.gameState, state.user, state.usedQuestionIds]);
+
+  // Fetch more questions when nearing the end
+  useEffect(() => {
+    if (state.gameState !== 'quiz') return;
+
+    const buffer = 2; // When 2 questions are left, fetch more
+    if (state.currentQuestionIndex + buffer >= state.questions.length) {
+      fetchFactChecks(state.user.selectedTag, state.user.selectedDateRange, 20, state.usedQuestionIds)
+        .then(data => {
+          if (data.length === 0) {
+            // No more unique questions available
+            dispatch({ 
+              type: ACTIONS.SET_ERROR, 
+              payload: { error: `No more unique questions available. Please continue until you lose all lives.` } 
+            });
+            return;
+          }
+          const newQuestions = data;
+          const newQuestionIds = data.map(q => q.id);
+          dispatch({ type: ACTIONS.FETCH_MORE_QUESTIONS, payload: { newQuestions, newQuestionIds } });
+        })
+        .catch(error => {
+          dispatch({ type: ACTIONS.SET_ERROR, payload: { error: error.message } });
+        });
+    }
+  }, [state.currentQuestionIndex, state.questions.length, state.gameState, state.user, state.usedQuestionIds]);
 
   return (
     <QuizContext.Provider value={{ state, dispatch, ACTIONS }}>
@@ -185,3 +164,5 @@ export function QuizProvider({ children }) {
     </QuizContext.Provider>
   );
 }
+
+export const QuizContext = createContext();

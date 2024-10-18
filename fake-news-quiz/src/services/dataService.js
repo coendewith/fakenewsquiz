@@ -12,12 +12,12 @@ function categorizeRating(rating) {
   }
 }
 
-export async function fetchFactChecks(tag = null, dateRange = 'all', numQuestions = 5) {
+export async function fetchFactChecks(tag = null, dateRange = 'all', numQuestions = 20, excludeSummaries = []) {
   try {
     console.log('Fetching fact checks from Supabase');
     let query = supabase
       .from('questions')
-      .select('*');
+      .select('*')
 
     // Apply tag filter if provided
     if (tag) {
@@ -30,6 +30,11 @@ export async function fetchFactChecks(tag = null, dateRange = 'all', numQuestion
       if (startDate) {
         query = query.gte('Date', startDate.toISOString());
       }
+    }
+
+    // Exclude previously fetched questions
+    if (excludeSummaries.length > 0) {
+      query = query.not('Summary', 'in', `(${excludeSummaries.map(s => `'${s}'`).join(',')})`);
     }
 
     // Add ordering by Date
@@ -53,23 +58,8 @@ export async function fetchFactChecks(tag = null, dateRange = 'all', numQuestion
     // Shuffle the results client-side
     const shuffled = categorizedData.sort(() => 0.5 - Math.random());
 
-    // Ensure we always return exactly 5 unique questions
-    const selectedQuestions = [];
-    const usedIndices = new Set();
-
-    while (selectedQuestions.length < 5 && usedIndices.size < shuffled.length) {
-      const randomIndex = Math.floor(Math.random() * shuffled.length);
-      if (!usedIndices.has(randomIndex)) {
-        selectedQuestions.push(shuffled[randomIndex]);
-        usedIndices.add(randomIndex);
-      }
-    }
-
-    // If we don't have enough unique questions, fill the rest with duplicates
-    while (selectedQuestions.length < 5) {
-      const randomIndex = Math.floor(Math.random() * shuffled.length);
-      selectedQuestions.push(shuffled[randomIndex]);
-    }
+    // Select the required number of questions
+    const selectedQuestions = shuffled.slice(0, numQuestions);
 
     console.log('Fetched, categorized, and randomized data:', selectedQuestions);
     return selectedQuestions;
@@ -94,11 +84,11 @@ function getStartDate(range) {
 }
 
 async function testConnection() {
-  const { data, error } = await supabase.from('questions').select('count');
+  const { data, error } = await supabase.from('questions').select('Summary');
   if (error) {
     console.error('Connection failed:', error);
   } else {
-    console.log('Connection successful. Row count:', data[0].count);
+    console.log('Connection successful. Row count:', data.length);
   }
 }
 

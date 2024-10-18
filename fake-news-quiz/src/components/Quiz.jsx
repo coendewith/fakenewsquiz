@@ -21,7 +21,6 @@ function Quiz() {
         <QuizQuestion
           question={currentQuestion}
           questionNumber={state.currentQuestionIndex + 1}
-          totalQuestions={state.questions.length}
           currentScore={state.score}
           fakeLabel="Fake"
           realLabel="Real"
