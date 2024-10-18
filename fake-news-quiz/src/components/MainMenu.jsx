@@ -147,7 +147,7 @@ function MainMenu() {
     <div className="flex flex-col items-center justify-center min-h-screen app-background">
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
         <div className="flex items-center mb-6">
-          <img src="/public/fake_news_quiz_logo_medium.png" alt="Fake News Quiz Logo" className="w-[8rem] h-[8rem] mr-8" />
+          <img src="/fake_news_quiz_logo_medium.png" alt="Fake News Quiz Logo" className="w-[8rem] h-[8rem] mr-8" />
           <h1 className="text-3xl font-bold italic">Fake News Quiz</h1>
         </div>
         <div className="space-y-4">
